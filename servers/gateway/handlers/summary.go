@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,7 +14,7 @@ import (
 )
 
 type PreviewImage struct {
-	URL string
+	URL string 
 	SecureURL string
 	Type string
 	Width int
@@ -34,7 +35,18 @@ type Metadata struct {
 }
 
 func SummaryHandler(w http.ResponseWriter, r *http.Request) {
-
+	url := r.URL.Query().Get("url")
+	metadata, err := fetchHTML(url)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "error fetching html:") {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		w.Write([]byte(err.Error()))
+	}
+	enc := json.NewEncoder(w)
+	enc.Encode(metadata)
 }
 
 func fetchHTML(url string) (*Metadata, error) {
