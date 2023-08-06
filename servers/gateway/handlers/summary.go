@@ -14,24 +14,24 @@ import (
 )
 
 type PreviewImage struct {
-	URL string 
-	SecureURL string
-	Type string
-	Width int
-	Height int
-	Alt string
+	URL string `json:"url"`
+	SecureURL string `json:"secureUrl"`
+	Type string `json:"type"`
+	Width int `json:"width"`
+	Height int `json:"height"`
+	Alt string `json:"alt"`
 }
 
 type Metadata struct {
-	Type string
-	URL string
-	Title string
-	SiteName string
-	Description string
-	Author string
-	Keywords []string
-	Icon PreviewImage
-	Images []*PreviewImage
+	Type string `json:"type"`
+	URL string `json:"url"`
+	Title string `json:"title"`
+	SiteName string `json:"siteName"`
+	Description string `json:"description"`
+	Author string `json:"author"`
+	Keywords []string `json:"keywords"`
+	Icon PreviewImage `json:"previewImage"`
+	Images []*PreviewImage `json:"Images"`
 }
 
 func SummaryHandler(w http.ResponseWriter, r *http.Request) {
