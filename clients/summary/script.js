@@ -21,7 +21,29 @@ btn.addEventListener('click', async () => {
     return
   }
   console.log(metadata)
+  renderSummary(metadata)
 })
+
+function renderSummary (data) {
+  const results = document.getElementById('results')
+  results.innerHTML = ''
+  if (data.title) {
+    const title = document.createElement('div')
+    title.innerHTML = data.title
+    results.appendChild(title)
+  }
+  if (data.description) {
+    const desc = document.createElement('div')
+    desc.innerHTML = data.description
+    results.appendChild(desc)
+  }
+  for (const imgData of data.Images) {
+    const img = document.createElement('img')
+    img.setAttribute('src', imgData.url)
+    img.setAttribute('alt', imgData.alt)
+    results.appendChild(img)
+  }
+}
 
 function renderError (e) {
   const results = document.getElementById('results')
