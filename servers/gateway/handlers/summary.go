@@ -22,6 +22,14 @@ type PreviewImage struct {
 	Alt string `json:"alt"`
 }
 
+type PreviewVideo struct {
+	URL string `json:"url"`
+	SecureURL string `json:"secureUrl"`
+	Type string `json:"type"`
+	Width int `json:"width"`
+	Height int `json:"height"`
+}
+
 type Metadata struct {
 	Type string `json:"type"`
 	URL string `json:"url"`
@@ -31,7 +39,8 @@ type Metadata struct {
 	Author string `json:"author"`
 	Keywords []string `json:"keywords"`
 	Icon PreviewImage `json:"previewImage"`
-	Images []*PreviewImage `json:"Images"`
+	Images []*PreviewImage `json:"images"`
+	Videos []*PreviewVideo `json:"videos"`
 }
 
 func SummaryHandler(w http.ResponseWriter, r *http.Request) {

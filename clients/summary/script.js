@@ -37,8 +37,8 @@ function renderSummary (data) {
     desc.innerHTML = data.description
     results.appendChild(desc)
   }
-  if (!data.Images) return
-  for (const imgData of data.Images) {
+  if (!data.images) return
+  for (const imgData of data.images) {
     const img = document.createElement('img')
     img.setAttribute('src', imgData.url)
     img.setAttribute('alt', imgData.alt)
