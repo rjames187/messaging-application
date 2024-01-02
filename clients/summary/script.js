@@ -37,12 +37,27 @@ function renderSummary (data) {
     desc.innerHTML = data.description
     results.appendChild(desc)
   }
-  if (!data.images) return
-  for (const imgData of data.images) {
-    const img = document.createElement('img')
-    img.setAttribute('src', imgData.url)
-    img.setAttribute('alt', imgData.alt)
-    results.appendChild(img)
+  if (data.images) {
+    for (const imgData of data.images) {
+      const img = document.createElement('img')
+      img.setAttribute('src', imgData.url)
+      img.setAttribute('alt', imgData.alt)
+      results.appendChild(img)
+    }
+  }
+  if (data.videos) {
+    for (const vidData of data.videos) {
+      let vid
+      if (vidData.type == 'text/html') vid = document.createElement('iframe')
+      else if (vidData.type.startsWith('video/')) {
+        vid = document.createElement('video')
+      } else {
+        console.log(`can't render video of type ${vidData.type}`)
+        continue
+      }
+      vid.setAttribute('src', vidData.url)
+      results.appendChild(vid)
+    }
   }
 }
 
