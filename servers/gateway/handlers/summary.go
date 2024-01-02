@@ -117,6 +117,45 @@ func parseToken(token *html.Token, metadata *Metadata) {
 	}
 }
 
+func parseMetaTag(token *html.Token, metadata *Metadata) {
+	// extract meta tag attributes
+	property, content, name := extractMetaAttributes(token)
+	// check meta attribute values
+	if property == "og:type" {
+		metadata.Type = content
+	}
+	if property == "og:url" {
+		metadata.URL = content
+	}
+	if property == "og:site_name" {
+		metadata.SiteName = content
+	}
+	if property == "og:description" {
+		metadata.Description = content
+	}
+	if name == "description" {
+		if metadata.Description == "" {
+			metadata.Description = content
+		}
+	}
+	if name == "author" {
+		metadata.Author = content
+	}
+	if name == "keywords" {
+		keywords := strings.Split(content, ",")
+		for i, keyword := range keywords {
+			keywords[i] = strings.Trim(keyword, " ")
+		}
+		metadata.Keywords = keywords
+	}
+	if strings.HasPrefix(property, "og:image") {
+		parseOGImage(property, content, metadata)
+	}
+	if strings.HasPrefix(property, "og:video") {
+		parseOGVideo(property, content, metadata)
+	}
+}
+
 func extractMetaAttributes(token *html.Token) (string, string, string) {
 	var property string
 	var content string
@@ -172,39 +211,37 @@ func parseOGImage(property string, content string, metadata *Metadata) {
 	}
 }
 
-func parseMetaTag(token *html.Token, metadata *Metadata) {
-	// extract meta tag attributes
-	property, content, name := extractMetaAttributes(token)
-	// check meta attribute values
-	if property == "og:type" {
-		metadata.Type = content
+func parseOGVideo(property string, content string, metadata *Metadata) {
+	split := strings.Split(property, ":")
+	if len(split) == 2 {
+		newVideo := &PreviewVideo{ URL: content }
+		metadata.Videos = append(metadata.Videos, newVideo)
+		return
 	}
-	if property == "og:url" {
-		metadata.URL = content
+	suffix := split[2]
+	latestVideo := metadata.Videos[len(metadata.Videos) - 1]
+	if suffix == "url" {
+		latestVideo.URL = content
 	}
-	if property == "og:site_name" {
-		metadata.SiteName = content
+	if suffix == "secure_url" {
+		latestVideo.SecureURL = content
 	}
-	if property == "og:description" {
-		metadata.Description = content
+	if suffix == "type" {
+		latestVideo.Type = content
 	}
-	if name == "description" {
-		if metadata.Description == "" {
-			metadata.Description = content
+	if suffix == "width" {
+		newInt, err := strconv.Atoi(content)
+		if err != nil {
+			log.Fatal("image width must be an int")
 		}
+		latestVideo.Width = newInt
 	}
-	if name == "author" {
-		metadata.Author = content
-	}
-	if name == "keywords" {
-		keywords := strings.Split(content, ",")
-		for i, keyword := range keywords {
-			keywords[i] = strings.Trim(keyword, " ")
+	if suffix == "height" {
+		newInt, err := strconv.Atoi(content)
+		if err != nil {
+			log.Fatal("image height must be an int")
 		}
-		metadata.Keywords = keywords
-	}
-	if strings.HasPrefix(property, "og:image") {
-		parseOGImage(property, content, metadata)
+		latestVideo.Height = newInt
 	}
 }
 
