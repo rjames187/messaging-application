@@ -121,34 +121,36 @@ func parseMetaTag(token *html.Token, metadata *Metadata) {
 	// extract meta tag attributes
 	property, content, name := extractMetaAttributes(token)
 	// check meta attribute values
-	if property == "og:type" {
+	if property == "twitter:card" && metadata.Type == "" {
 		metadata.Type = content
-	}
-	if property == "og:url" {
+	} else if property == "og:type" {
+		metadata.Type = content
+	} else if property == "og:title" {
+		metadata.Title = content
+	} else if property == "twitter:title" && metadata.Title == "" {
+		metadata.Title = content
+	} else if property == "og:url" {
 		metadata.URL = content
-	}
-	if property == "og:site_name" {
+	} else if property == "og:site_name" {
 		metadata.SiteName = content
-	}
-	if property == "og:description" {
+	} else if property == "twitter:description" && metadata.Description == "" {
 		metadata.Description = content
-	}
-	if name == "description" {
+	} else if property == "og:description" {
+		metadata.Description = content
+	} else if name == "description" {
 		if metadata.Description == "" {
 			metadata.Description = content
 		}
-	}
-	if name == "author" {
+	} else if name == "author" {
 		metadata.Author = content
-	}
-	if name == "keywords" {
+	} else if name == "keywords" {
 		keywords := strings.Split(content, ",")
 		for i, keyword := range keywords {
 			keywords[i] = strings.Trim(keyword, " ")
 		}
 		metadata.Keywords = keywords
 	}
-	if strings.HasPrefix(property, "og:image") {
+	if strings.HasPrefix(property, "og:image") || strings.HasPrefix(property, "twitter:image") {
 		parseOGImage(property, content, metadata)
 	}
 	if strings.HasPrefix(property, "og:video") {
