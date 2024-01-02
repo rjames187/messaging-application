@@ -37,6 +37,7 @@ function renderSummary (data) {
     desc.innerHTML = data.description
     results.appendChild(desc)
   }
+  if (!data.Images) return
   for (const imgData of data.Images) {
     const img = document.createElement('img')
     img.setAttribute('src', imgData.url)
