@@ -1,4 +1,4 @@
-HOST_NAME = 'https://localhost:443'
+HOST_NAME = 'https://api.rjames.me'
 
 const btn = document.querySelector('button')
 

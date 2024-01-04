@@ -5,7 +5,7 @@ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj "//CN=localhos
 docker run -d \
 --name gateway \
 -p 443:443 \
--v $(pwd):/etc/certs:ro \
+-v /$(pwd):/etc/certs:ro \
 -e TLSCERT=/etc/certs/fullchain.pem \
 -e TLSKEY=/etc/certs/privkey.pem \
 rjames187/gateway:1.0
