@@ -11,8 +11,18 @@ import (
 
 func main() {
 	ADDR := os.Getenv("ADDR")
-	if ADDR == "" {
+	if len(ADDR) == 0 {
 		ADDR = ":443"
+	}
+	
+	TLSCERT := os.Getenv("TLSCERT")
+	if len(TLSCERT) == 0 {
+		log.Fatal("No TLSCERT environment variable found")
+	}
+	
+	TLSKEY := os.Getenv("TLSKEY")
+	if len(TLSKEY) == 0 {
+		log.Fatal("No TLSKEY environment variable found")
 	}
 
 	mux := http.NewServeMux()
@@ -20,5 +30,5 @@ func main() {
 
 	handler := cors.Default().Handler(mux)
 	log.Printf("server is listening at %s...", ADDR)
-	log.Fatal(http.ListenAndServe(ADDR, handler))
+	log.Fatal(http.ListenAndServeTLS(ADDR, TLSCERT, TLSKEY, handler))
 }
