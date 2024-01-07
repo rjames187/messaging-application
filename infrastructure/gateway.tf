@@ -22,7 +22,6 @@ resource "digitalocean_droplet" "gateway" {
       "sudo ufw allow 443",
       "sudo apt update",
       "sudo apt install -y letsencrypt",
-      "sudo letsencrypt certonly --standalone -n --agree-tos --email rory.james2021@gmail.com -d api.rjames.me",
     ]
   }
 }
