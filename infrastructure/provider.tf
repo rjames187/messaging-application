@@ -16,7 +16,7 @@ provider "digitalocean" {
   token = var.do_token
 }
 
-# here, terraform refers to the name of the ssh key saved in Digital Ocean
+# terraform refers to an ssh key saved in Digital Ocean
 data "digitalocean_ssh_key" "terraform" {
   name = "terraform"
 }
