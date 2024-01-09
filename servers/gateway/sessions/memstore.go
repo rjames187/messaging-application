@@ -19,11 +19,11 @@ func (m *MemoryStore) Set(sessionID string, userID int) error {
 	return nil
 }
 
-func (m *MemoryStore) Update(sessionID string, newUserID int) error {
+func (m *MemoryStore) Delete(sessionID string) error {
 	userID := m.store[sessionID]
 	if userID == 0 {
 		return errors.New("given session id is not in the session store")
 	}
-	m.store[sessionID] = newUserID
+	delete(m.store, sessionID)
 	return nil
 }
