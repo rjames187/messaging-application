@@ -5,32 +5,21 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 )
 
-func createSessionToken(IDLength int) (string, string, string, error) {
+func createSessionToken(secret string, IDLength int) (string, string, error) {
 	id, err := generateRandomBytes(IDLength); if err != nil {
-		return "", "", "", err
+		return "", "", err
 	}
-	secret, err := generateRandomBytes(32); if err != nil {
-		return "", "", "", err
+	secretBytes, err := base64.URLEncoding.DecodeString(secret)
+	if err != nil {
+		return "", "", err
 	}
-	signature, err := signID(id, secret); if err != nil {
-		return "", "", "", err
+	signature, err := signID(id, secretBytes); if err != nil {
+		return "", "", err
 	}
 	token := append(id, signature...)
-	return encode(token), encode(id), encode(secret), nil
-}
-
-func extractIDFromToken(sessionToken string, IDLength int) (string, error) {
-	tokenBytes, err := base64.URLEncoding.DecodeString(sessionToken)
-	if err != nil {
-		return "", err
-	}
-	if len(tokenBytes) <= IDLength {
-		return "", errors.New("token is too short")
-	}
-	return encode(tokenBytes[:IDLength]), nil
+	return encode(token), encode(id), nil
 }
 
 func validToken(sessionToken string, secret string, IDLength int) (bool, string, error) {

@@ -2,21 +2,18 @@ package sessions
 
 const SESSIONID_LENGTH = 32
 
-func BeginSession(userID int, store Store) (string, string, error) {
-	sessionToken, sessionID, secret, err := createSessionToken(SESSIONID_LENGTH)
+func BeginSession(userID int, secret string, store Store) (string, error) {
+	sessionToken, sessionID, err := createSessionToken(secret, SESSIONID_LENGTH)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	err = store.Set(sessionID, userID)
 	if err != nil {
-		return "", "", nil
+		return "", nil
 	}
-	return sessionToken, secret, nil
+	return sessionToken, nil
 }
 
 func GetSessionState(sessionToken string) (int, error) {
-	sessionID, err := extractIDFromToken(sessionToken, SESSIONID_LENGTH)
-	if err != nil {
-		return 0, err
-	}
+
 }
