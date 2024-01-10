@@ -1,19 +1,9 @@
 package sessions
 
-import (
-	"crypto/rand"
-	"encoding/base64"
-)
-
 const SESSIONID_LENGTH = 32
 
 func BeginSession(userID int, store Store) (string, string, error) {
-	secretBytes := make([]byte, 32)
-	_, err := rand.Read(secretBytes); if err != nil {
-		return "", "", err
-	}
-	secret := base64.URLEncoding.EncodeToString(secretBytes)
-	sessionToken, sessionID, err := createSessionToken(secret, SESSIONID_LENGTH)
+	sessionToken, sessionID, secret, err := createSessionToken(SESSIONID_LENGTH)
 	if err != nil {
 		return "", "", err
 	}
@@ -22,4 +12,8 @@ func BeginSession(userID int, store Store) (string, string, error) {
 		return "", "", nil
 	}
 	return sessionToken, secret, nil
+}
+
+func GetSessionState(sessionToken string) (int, error) {
+
 }
