@@ -6,6 +6,10 @@ type MemoryStore struct {
 	store map[string]int
 }
 
+func (m MemoryStore) New() MemoryStore {
+	return MemoryStore{map[string]int{}}
+}
+
 func (m *MemoryStore) Get(sessionID string) (int, error) {
 	userID := m.store[sessionID]
 	if userID == 0 {
