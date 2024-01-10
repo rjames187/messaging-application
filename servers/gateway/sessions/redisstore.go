@@ -12,14 +12,15 @@ type RedisStore struct {
 	ctx context.Context
 }
 
-func (rs *RedisStore) New(addr string) RedisStore {
-	rdb := redis.NewClient(&redis.Options{
+func (rs RedisStore) New(addr string) RedisStore {
+	res := RedisStore{}
+	res.rdb = redis.NewClient(&redis.Options{
 		Addr: addr,
 		Password: "",
 		DB: 0,
 	})
-	rs.rdb = rdb
-	rs.ctx = context.Background()
+	res.ctx = context.Background()
+	return res
 }
 
 func (rs *RedisStore) Get(sessionID string) (int, error) {
@@ -34,8 +35,8 @@ func (rs *RedisStore) Get(sessionID string) (int, error) {
 	return res, nil
 }
 
-func (rs *RedisStore) Set(sessionID string, newUserID int) error {
-	return rs.rdb.Set(rs.ctx, sessionID, newUserID, 1800).Err()
+func (rs *RedisStore) Set(sessionID string, userID int) error {
+	return rs.rdb.Set(rs.ctx, sessionID, userID, 1800).Err()
 } 
 
 func (rs *RedisStore) Delete(sessionID string) error {
