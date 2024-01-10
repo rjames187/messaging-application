@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 )
 
 func createSessionToken(IDLength int) (string, string, string, error) {
@@ -19,6 +20,30 @@ func createSessionToken(IDLength int) (string, string, string, error) {
 	}
 	token := append(id, signature...)
 	return encode(token), encode(id), encode(secret), nil
+}
+
+func validToken(sessionToken string, secret string, IDLength int) (bool, string, error) {
+	tokenBytes, err := base64.URLEncoding.DecodeString(sessionToken)
+	if err != nil {
+		return false, "", err
+	}
+	if len(tokenBytes) <= IDLength {
+		return false, "", errors.New("token is too short")
+	}
+	sessionID := tokenBytes[:32]
+	signature := tokenBytes[32:]
+	secretBytes, err := base64.URLEncoding.DecodeString(secret)
+	if err != nil {
+		return false, "", err
+	}
+	signatureToCompare, err := signID(sessionID, secretBytes)
+	if err != nil {
+		return false, "", err
+	}
+	if !hmac.Equal(signature, signatureToCompare) {
+		return false, "", nil
+	}
+	return true, encode(sessionID), nil
 }
 
 func generateRandomBytes(length int) ([]byte, error) {
