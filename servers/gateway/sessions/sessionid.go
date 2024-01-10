@@ -7,18 +7,22 @@ import (
 	"encoding/base64"
 )
 
-func createSessionID(secret []byte) (string, error) {
-	bytes, err := generateRandomBytes(32); if err != nil {
-		return "", err
+func createSessionToken(secret string, IDLength int) (string, string, error) {
+	id, err := generateSessionID(IDLength); if err != nil {
+		return "", "", err
 	}
-	signature, err := signID(bytes, secret); if err != nil {
-		return "", err
+	decodedSecret, err := base64.URLEncoding.DecodeString(secret)
+	if err != nil {
+		return "", "", err
 	}
-	id := encodeSignature(signature)
-	return id, nil
+	signature, err := signID(id, decodedSecret); if err != nil {
+		return "", "", err
+	}
+	token := append(id, signature...)
+	return encode(token), encode(id), nil
 }
 
-func generateRandomBytes(length int) ([]byte, error) {
+func generateSessionID(length int) ([]byte, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes); if err != nil {
 		return nil, err
@@ -34,6 +38,6 @@ func signID(id []byte, secret []byte) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func encodeSignature(signature []byte) string {
-	return base64.URLEncoding.EncodeToString(signature)
+func encode(token []byte) string {
+	return base64.URLEncoding.EncodeToString(token)
 }

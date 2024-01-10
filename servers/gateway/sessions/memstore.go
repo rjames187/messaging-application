@@ -13,7 +13,7 @@ func (m MemoryStore) New() MemoryStore {
 func (m *MemoryStore) Get(sessionID string) (int, error) {
 	userID := m.store[sessionID]
 	if userID == 0 {
-		return 0, errors.New("given session id is not in the session store")
+		return 0, errors.New("no matches to given token in session store")
 	}
 	return userID, nil
 }
@@ -26,7 +26,7 @@ func (m *MemoryStore) Set(sessionID string, userID int) error {
 func (m *MemoryStore) Delete(sessionID string) error {
 	userID := m.store[sessionID]
 	if userID == 0 {
-		return errors.New("given session id is not in the session store")
+		return errors.New("no matches to given token in session store")
 	}
 	delete(m.store, sessionID)
 	return nil

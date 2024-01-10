@@ -5,13 +5,15 @@ import (
 	"encoding/base64"
 )
 
+const SESSIONID_LENGTH = 32
+
 func BeginSession(userID int, store Store) (string, string, error) {
-	bytes := make([]byte, 32)
-	_, err := rand.Read(bytes)
-	if err != nil {
+	secretBytes := make([]byte, 32)
+	_, err := rand.Read(secretBytes); if err != nil {
 		return "", "", err
 	}
-	sessionID, err := createSessionID(bytes)
+	secret := base64.URLEncoding.EncodeToString(secretBytes)
+	sessionToken, sessionID, err := createSessionToken(secret, SESSIONID_LENGTH)
 	if err != nil {
 		return "", "", err
 	}
@@ -19,6 +21,5 @@ func BeginSession(userID int, store Store) (string, string, error) {
 	if err != nil {
 		return "", "", nil
 	}
-	secret := base64.URLEncoding.EncodeToString(bytes)
-	return sessionID, secret, nil
+	return sessionToken, secret, nil
 }
