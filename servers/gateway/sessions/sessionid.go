@@ -22,16 +22,24 @@ func createSessionToken(IDLength int) (string, string, string, error) {
 	return encode(token), encode(id), encode(secret), nil
 }
 
+func extractIDFromToken(sessionToken string, IDLength int) (string, error) {
+	tokenBytes, err := base64.URLEncoding.DecodeString(sessionToken)
+	if err != nil {
+		return "", err
+	}
+	if len(tokenBytes) <= IDLength {
+		return "", errors.New("token is too short")
+	}
+	return encode(tokenBytes[:IDLength]), nil
+}
+
 func validToken(sessionToken string, secret string, IDLength int) (bool, string, error) {
 	tokenBytes, err := base64.URLEncoding.DecodeString(sessionToken)
 	if err != nil {
 		return false, "", err
 	}
-	if len(tokenBytes) <= IDLength {
-		return false, "", errors.New("token is too short")
-	}
-	sessionID := tokenBytes[:32]
-	signature := tokenBytes[32:]
+	sessionID := tokenBytes[:IDLength]
+	signature := tokenBytes[IDLength:]
 	secretBytes, err := base64.URLEncoding.DecodeString(secret)
 	if err != nil {
 		return false, "", err

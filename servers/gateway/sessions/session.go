@@ -15,5 +15,8 @@ func BeginSession(userID int, store Store) (string, string, error) {
 }
 
 func GetSessionState(sessionToken string) (int, error) {
-
+	sessionID, err := extractIDFromToken(sessionToken, SESSIONID_LENGTH)
+	if err != nil {
+		return 0, err
+	}
 }
