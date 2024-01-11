@@ -30,3 +30,14 @@ func GetSessionState(sessionToken string, secret string, store Store) (int, erro
 	}
 	return userID, nil
 }
+
+func EndSession(sessionToken string, store Store) error {
+	sessionID, err := extractIDFromToken(sessionToken, SESSIONID_LENGTH)
+	if err != nil {
+		return err
+	}
+	err = store.Delete(sessionID); if err != nil {
+		return err
+	}
+	return nil
+}

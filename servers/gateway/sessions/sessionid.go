@@ -43,6 +43,15 @@ func validToken(sessionToken string, secret string, IDLength int) (bool, string,
 	return true, encode(sessionID), nil
 }
 
+func extractIDFromToken(sessionToken string, IDLength int) (string, error) {
+	tokenBytes, err := base64.URLEncoding.DecodeString(sessionToken)
+	if err != nil {
+		return "", err
+	}
+	sessionID := tokenBytes[:IDLength]
+	return encode(sessionID), nil
+}
+
 func generateRandomBytes(length int) ([]byte, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes); if err != nil {
