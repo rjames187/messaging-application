@@ -2,7 +2,10 @@ package sessions
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"strconv"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -10,6 +13,7 @@ import (
 type RedisStore struct {
 	rdb *redis.Client
 	ctx context.Context
+	exp int
 }
 
 func (rs RedisStore) New(addr string) RedisStore {
@@ -28,6 +32,11 @@ func (rs *RedisStore) Get(sessionID string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	duration, _ := time.ParseDuration(fmt.Sprintf("%dm", rs.exp))
+	err = rs.rdb.Expire(rs.ctx, sessionID, duration).Err()
+	if err != nil {
+		log.Print("error resetting Redis expiration timer")
+	}
 	res, err := strconv.Atoi(val)
 	if err != nil {
 		return 0, err
@@ -36,7 +45,8 @@ func (rs *RedisStore) Get(sessionID string) (int, error) {
 }
 
 func (rs *RedisStore) Set(sessionID string, userID int) error {
-	return rs.rdb.Set(rs.ctx, sessionID, userID, 1800).Err()
+	duration, _ := time.ParseDuration(fmt.Sprintf("%dm", rs.exp))
+	return rs.rdb.Set(rs.ctx, sessionID, userID, duration).Err()
 } 
 
 func (rs *RedisStore) Delete(sessionID string) error {
