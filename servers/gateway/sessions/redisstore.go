@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -13,10 +12,10 @@ import (
 type RedisStore struct {
 	rdb *redis.Client
 	ctx context.Context
-	exp int
+	exp string
 }
 
-func (rs RedisStore) New(addr string) RedisStore {
+func NewRedisStore(addr string, expiration string) RedisStore {
 	res := RedisStore{}
 	res.rdb = redis.NewClient(&redis.Options{
 		Addr: addr,
@@ -24,15 +23,19 @@ func (rs RedisStore) New(addr string) RedisStore {
 		DB: 0,
 	})
 	res.ctx = context.Background()
+	res.exp = expiration
 	return res
 }
 
 func (rs *RedisStore) Get(sessionID string) (int, error) {
 	val, err := rs.rdb.Get(rs.ctx, sessionID).Result()
 	if err != nil {
+		if err.Error() == "redis: nil" {
+			return 0, nil
+		}
 		return 0, err
 	}
-	duration, _ := time.ParseDuration(fmt.Sprintf("%dm", rs.exp))
+	duration, _ := time.ParseDuration(rs.exp)
 	err = rs.rdb.Expire(rs.ctx, sessionID, duration).Err()
 	if err != nil {
 		log.Print("error resetting Redis expiration timer")
@@ -45,7 +48,7 @@ func (rs *RedisStore) Get(sessionID string) (int, error) {
 }
 
 func (rs *RedisStore) Set(sessionID string, userID int) error {
-	duration, _ := time.ParseDuration(fmt.Sprintf("%dm", rs.exp))
+	duration, _ := time.ParseDuration(rs.exp)
 	return rs.rdb.Set(rs.ctx, sessionID, userID, duration).Err()
 } 
 
