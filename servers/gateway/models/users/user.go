@@ -76,6 +76,13 @@ func (u *User) FullName() string {
 	}
 }
 
+func (u *User) Authenticate(password string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.PassHash), []byte(password)); err != nil {
+		return false
+	}
+	return true
+}
+
 type Credentials struct {
 	Email string
 	Password string
