@@ -15,7 +15,6 @@ type NewUser struct {
 	LastName  string
 	Password  string
 	Email     string
-	Username  string
 }
 
 func (nu *NewUser) Validate() error {
@@ -39,7 +38,6 @@ func (nu *NewUser) ToUser() (*User, error) {
 		FirstName: nu.FirstName,
 		LastName: nu.LastName,
 		Email: nu.Email,
-		Username: nu.Username,
 	}
 
 	cleaned := strings.TrimSpace(nu.Email)
@@ -63,12 +61,11 @@ type User struct {
 	LastName  string
 	PassHash  string
 	Email     string
-	Username  string
 	PhotoURL  string
 }
 
 type Credentials struct {
-	Username string
+	Email string
 	Password string
 }
 
