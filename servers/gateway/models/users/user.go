@@ -35,15 +35,18 @@ type NewUser struct {
 }
 
 func (nu *NewUser) Validate() error {
+	if nu.Password == "" {
+		return errors.New("Password cannot be blank")
+	}
 	matches, _ := regexp.MatchString(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`, nu.Email)
 	if !matches {
 		return errors.New(fmt.Sprintf("Invalid email address: %s", nu.Email))
 	}
-	matches, _ = regexp.MatchString(`[^0-9]+`, nu.FirstName)
+	matches, _ = regexp.MatchString(`^[^0-9]*$`, nu.FirstName)
 	if !matches {
 		return errors.New(fmt.Sprintf("Invalid first name: %s", nu.FirstName))
 	}
-	matches, _ = regexp.MatchString(`[^0-9]+`, nu.LastName)
+	matches, _ = regexp.MatchString(`^[^0-9]*$`, nu.LastName)
 	if !matches {
 		return errors.New(fmt.Sprintf("Invalid last name: %s", nu.LastName))
 	}
