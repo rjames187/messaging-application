@@ -64,6 +64,18 @@ type User struct {
 	PhotoURL  string
 }
 
+func (u *User) FullName() string {
+	if u.FirstName != "" && u.LastName != "" {
+		return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
+	} else if u.FirstName != "" {
+		return u.FirstName
+	} else if u.LastName != "" {
+		return u.LastName
+	} else {
+		return u.Email
+	}
+}
+
 type Credentials struct {
 	Email string
 	Password string
