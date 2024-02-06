@@ -10,6 +10,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func generatePhotoURL(email string) string {
+	cleaned := strings.TrimSpace(email)
+	cleaned = strings.ToLower(cleaned)
+	h := sha256.New()
+	h.Write([]byte(cleaned))
+	hash := string(h.Sum(nil))
+	return fmt.Sprintf("https://gravatar.com/avatar/%s", hash)
+}
+
+func hashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 13)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
 type NewUser struct {
 	FirstName string
 	LastName  string
@@ -40,14 +57,9 @@ func (nu *NewUser) ToUser() (*User, error) {
 		Email: nu.Email,
 	}
 
-	cleaned := strings.TrimSpace(nu.Email)
-	cleaned = strings.ToLower(cleaned)
-	h := sha256.New()
-	h.Write([]byte(cleaned))
-	hash := string(h.Sum(nil))
-	u.PhotoURL = fmt.Sprintf("https://gravatar.com/avatar/%s", hash)
+	u.PhotoURL = generatePhotoURL(nu.Email)
 
-	PassHash, err := bcrypt.GenerateFromPassword([]byte(nu.Password), 13)
+	PassHash, err := hashPassword(nu.Password)
 	if err != nil {
 		return &User{}, err
 	}
@@ -83,7 +95,12 @@ func (u *User) Authenticate(password string) bool {
 	return true
 }
 
-type Updates NewUser
+type Updates struct {
+	FirstName string
+	LastName string
+	Password string
+	Email string
+}
 
 func (u *User) ApplyUpdates(updates *Updates) error {
 	if updates.FirstName != "" {
@@ -93,20 +110,14 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 		u.LastName = updates.LastName
 	}
 	if updates.Password != "" {
-		PassHash, err := bcrypt.GenerateFromPassword([]byte(updates.Password), 13)
+		PassHash, err := hashPassword(updates.Password)
 		if err != nil {
 			return err
 		}
 		u.PassHash = string(PassHash)
 	}
 	if updates.Email != "" {
-		u.Email = updates.Email
-		cleaned := strings.TrimSpace(updates.Email)
-		cleaned = strings.ToLower(cleaned)
-		h := sha256.New()
-		h.Write([]byte(cleaned))
-		hash := string(h.Sum(nil))
-		u.PhotoURL = fmt.Sprintf("https://gravatar.com/avatar/%s", hash)
+		u.PhotoURL = generatePhotoURL(updates.Email)
 	}
 	return nil
 }
