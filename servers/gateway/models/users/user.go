@@ -1,9 +1,13 @@
 package models
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type NewUser struct {
@@ -12,20 +16,6 @@ type NewUser struct {
 	Password  string
 	Email     string
 	Username  string
-}
-
-type User struct {
-	FirstName string
-	LastName  string
-	PassHash  string
-	Email     string
-	Username  string
-	PhotoURL  string
-}
-
-type Credentials struct {
-	Username string
-	Password string
 }
 
 func (nu *NewUser) Validate() error {
@@ -43,3 +33,42 @@ func (nu *NewUser) Validate() error {
 	}
 	return nil
 }
+
+func (nu *NewUser) ToUser() (*User, error) {
+	u := User{
+		FirstName: nu.FirstName,
+		LastName: nu.LastName,
+		Email: nu.Email,
+		Username: nu.Username,
+	}
+
+	cleaned := strings.TrimSpace(nu.Email)
+	cleaned = strings.ToLower(cleaned)
+	h := sha256.New()
+	h.Write([]byte(cleaned))
+	hash := string(h.Sum(nil))
+	u.PhotoURL = fmt.Sprintf("https://gravatar.com/avatar/%s", hash)
+
+	PassHash, err := bcrypt.GenerateFromPassword([]byte(nu.Password), 13)
+	if err != nil {
+		return &User{}, err
+	}
+	u.PassHash = string(PassHash)
+
+	return &u, nil
+}
+
+type User struct {
+	FirstName string
+	LastName  string
+	PassHash  string
+	Email     string
+	Username  string
+	PhotoURL  string
+}
+
+type Credentials struct {
+	Username string
+	Password string
+}
+
