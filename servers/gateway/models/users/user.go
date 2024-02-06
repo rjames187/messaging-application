@@ -83,6 +83,34 @@ func (u *User) Authenticate(password string) bool {
 	return true
 }
 
+type Updates NewUser
+
+func (u *User) ApplyUpdates(updates *Updates) error {
+	if updates.FirstName != "" {
+		u.FirstName = updates.FirstName
+	}
+	if updates.LastName != "" {
+		u.LastName = updates.LastName
+	}
+	if updates.Password != "" {
+		PassHash, err := bcrypt.GenerateFromPassword([]byte(updates.Password), 13)
+		if err != nil {
+			return err
+		}
+		u.PassHash = string(PassHash)
+	}
+	if updates.Email != "" {
+		u.Email = updates.Email
+		cleaned := strings.TrimSpace(updates.Email)
+		cleaned = strings.ToLower(cleaned)
+		h := sha256.New()
+		h.Write([]byte(cleaned))
+		hash := string(h.Sum(nil))
+		u.PhotoURL = fmt.Sprintf("https://gravatar.com/avatar/%s", hash)
+	}
+	return nil
+}
+
 type Credentials struct {
 	Email string
 	Password string
