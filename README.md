@@ -1,2 +1,3 @@
-# Messaging Application
-I'm following the curriculum of the University of Washington's *Server-side Development* course. Whenever I complete challenge in this course I push the code to this repo.
+# Data-Intensive Messaging Application
+
+I am building a Slack clone intended to emulate the microservices architecture of data-intensive applications. I am currently working on authentication and session tracking for the gateway server.
