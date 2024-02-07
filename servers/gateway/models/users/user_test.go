@@ -25,3 +25,38 @@ func TestValidate(t *testing.T) {
 		}
 	}
 }
+
+func TestToUser(t *testing.T) {
+	cases := []struct {
+		input *NewUser
+		output *User
+	}{
+		{
+			&NewUser{FirstName: "Bob", LastName: "Jones", Password: "password1", Email: "myemailaddress@example.com"},
+			&User{FirstName: "Bob", LastName: "Jones", PhotoURL: "https://gravatar.com/avatar/84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee", Email: "myemailaddress@example.com"},
+		},
+		{
+			&NewUser{Password: "password1", Email: " MyemailAddress@example.com  "},
+			&User{PhotoURL: "https://gravatar.com/avatar/84059b07d4be67b806386c0aad8070a23f18836bbaae342275dc0a83414c32ee", Email: " MyemailAddress@example.com  "},
+		},
+	}
+
+	for _, c := range cases {
+		u, err := c.input.ToUser()
+		if err != nil {
+			t.Errorf("Error converting NewUser `%s` to User: %s", c.input, err)
+		}
+		if u.FirstName != c.output.FirstName {
+			t.Errorf("Expected FirstName `%s` but got `%s`", c.output.FirstName, u.FirstName)
+		}
+		if u.LastName != c.output.LastName {
+			t.Errorf("Expected LastName `%s` but got `%s`", c.output.LastName, u.LastName)
+		}
+		if u.Email != c.output.Email {
+			t.Errorf("Expected Email `%s` but got `%s`", c.output.Email, u.Email)
+		}
+		if u.PhotoURL != c.output.PhotoURL {
+			t.Errorf("Expected PhotoURL `%s` but got `%s`", c.output.PhotoURL, u.PhotoURL)
+		}
+	}
+}

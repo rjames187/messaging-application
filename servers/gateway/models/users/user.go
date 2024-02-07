@@ -2,6 +2,7 @@ package models
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"regexp"
@@ -15,7 +16,7 @@ func generatePhotoURL(email string) string {
 	cleaned = strings.ToLower(cleaned)
 	h := sha256.New()
 	h.Write([]byte(cleaned))
-	hash := string(h.Sum(nil))
+	hash := hex.EncodeToString(h.Sum(nil))
 	return fmt.Sprintf("https://gravatar.com/avatar/%s", hash)
 }
 
