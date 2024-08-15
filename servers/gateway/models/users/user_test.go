@@ -60,3 +60,34 @@ func TestToUser(t *testing.T) {
 		}
 	}
 }
+
+func TestFullName(t *testing.T) {
+	cases := []struct{
+		input *User
+		output string
+	}{
+		{
+			&User{FirstName: "Jimmy", LastName: "John", Email: "jimmyjohn3@gmail.com"},
+			"Jimmy John",
+		},
+		{
+			&User{FirstName: "Jimmy", Email: "jimmyjohn3@gmail.com"},
+			"Jimmy",
+		},
+		{
+			&User{LastName: "John", Email: "jimmyjohn3@gmail.com"},
+			"John",
+		},
+		{
+			&User{Email: "jimmyjohn3@gmail.com"},
+			"jimmyjohn3@gmail.com",
+		},
+	}
+
+	for _, c := range cases {
+		name := c.input.FullName()
+		if name != c.output {
+			t.Errorf("Expected %s but got %s", c.output, name)
+		}
+	}
+}
