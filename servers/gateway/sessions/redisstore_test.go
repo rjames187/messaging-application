@@ -1,11 +1,20 @@
 package sessions
 
 import (
+	"os"
 	"testing"
 	"time"
 )
 
-const ADDR string = "localhost:6379"
+func getAddr() string {
+	addr := os.Getenv("REDISADDR")
+	if addr != "" {
+		return addr
+	}
+	return "localhost:6379"
+}
+
+var ADDR = getAddr()
 
 func TestSetGet(t *testing.T) {
 	client := NewRedisStore(ADDR, "3s")
