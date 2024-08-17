@@ -91,3 +91,27 @@ func TestFullName(t *testing.T) {
 		}
 	}
 }
+
+func TestAuthenticate(t *testing.T) {
+	nu := NewUser{
+		Password: "Epic1245!",
+	}
+	u, _ := nu.ToUser()
+
+	cases := []struct{
+		user *User
+		password string
+		output bool
+	}{
+		{u, "Epic1245!", true},
+		{u, "fdgsdsg45", false},
+		{u, "", false},
+	}
+
+	for _, c := range cases {
+		authenticated := c.user.Authenticate(c.password)
+		if authenticated != c.output {
+			t.Errorf("Expected %t but got %t", c.output, authenticated)
+		}
+	}
+}
