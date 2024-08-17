@@ -115,3 +115,38 @@ func TestAuthenticate(t *testing.T) {
 		}
 	}
 }
+
+func TestApplyUpdates(t *testing.T) {
+	userFixture, _  := (&NewUser{Password: "boss88", Email: "funny@gmail.com"}).ToUser()
+
+	cases := []struct{
+		user *User
+		updates *Updates
+	}{
+		{&User{}, &Updates{FirstName: "Bob"}},
+		{&User{FirstName: "Donald"}, &Updates{FirstName: "Bob"}},
+		{&User{LastName: "Mac"}, &Updates{LastName: "Thomas"}},
+		{userFixture, &Updates{Password: "dfasf5ya5e6"}},
+		{userFixture, &Updates{Password: "afsdg44", Email: "cool@hotmail.com"}},
+	}
+
+	for _, c := range cases {
+		oldPhoto := c.user.PhotoURL
+		err := c.user.ApplyUpdates(c.updates)
+		if err != nil {
+			t.Errorf("Error applying updates: %s", err)
+		}
+		if c.updates.FirstName != "" && c.user.FirstName != c.updates.FirstName {
+			t.Errorf("Expected FirstName to be %s but got %s", c.updates.FirstName, c.user.FirstName)
+		}
+		if c.updates.LastName != "" && c.user.LastName != c.updates.LastName {
+			t.Errorf("Expected LastName to be %s but got %s", c.updates.LastName, c.user.LastName)
+		}
+		if c.updates.Email != "" && c.user.PhotoURL == oldPhoto {
+			t.Errorf("Expected photo URL to change because of email address change")
+		}
+		if c.updates.Password != "" && !c.user.Authenticate(c.updates.Password) {
+			t.Errorf("New password %s failed to authenticate", c.updates.Password)
+		}
+	}
+}
