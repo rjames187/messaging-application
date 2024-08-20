@@ -1,4 +1,4 @@
-package models
+package users
 
 import (
 	"crypto/sha256"
@@ -31,6 +31,7 @@ func hashPassword(password string) (string, error) {
 type NewUser struct {
 	FirstName string
 	LastName  string
+	Username string
 	Password  string
 	Email     string
 }
@@ -58,6 +59,7 @@ func (nu *NewUser) ToUser() (*User, error) {
 	u := User{
 		FirstName: nu.FirstName,
 		LastName: nu.LastName,
+		Username: nu.Username,
 		Email: nu.Email,
 	}
 
@@ -73,8 +75,10 @@ func (nu *NewUser) ToUser() (*User, error) {
 }
 
 type User struct {
+	ID int64
 	FirstName string
 	LastName  string
+	Username string
 	PassHash  string
 	Email     string
 	PhotoURL  string
