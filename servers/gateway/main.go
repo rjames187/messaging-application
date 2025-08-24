@@ -1,8 +1,8 @@
 package main
 
 import (
-	"info-project/servers/gateway/handlers"
 	"log"
+	"messaging-application/servers/gateway/handlers"
 	"net/http"
 	"os"
 
@@ -14,12 +14,12 @@ func main() {
 	if len(ADDR) == 0 {
 		ADDR = ":443"
 	}
-	
+
 	TLSCERT := os.Getenv("TLSCERT")
 	if len(TLSCERT) == 0 {
 		log.Fatal("No TLSCERT environment variable found")
 	}
-	
+
 	TLSKEY := os.Getenv("TLSKEY")
 	if len(TLSKEY) == 0 {
 		log.Fatal("No TLSKEY environment variable found")
