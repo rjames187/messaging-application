@@ -14,33 +14,33 @@ import (
 )
 
 type PreviewImage struct {
-	URL string `json:"url"`
+	URL       string `json:"url"`
 	SecureURL string `json:"secureUrl"`
-	Type string `json:"type"`
-	Width int `json:"width"`
-	Height int `json:"height"`
-	Alt string `json:"alt"`
+	Type      string `json:"type"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	Alt       string `json:"alt"`
 }
 
 type PreviewVideo struct {
-	URL string `json:"url"`
+	URL       string `json:"url"`
 	SecureURL string `json:"secureUrl"`
-	Type string `json:"type"`
-	Width int `json:"width"`
-	Height int `json:"height"`
+	Type      string `json:"type"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
 }
 
 type Metadata struct {
-	Type string `json:"type"`
-	URL string `json:"url"`
-	Title string `json:"title"`
-	SiteName string `json:"siteName"`
-	Description string `json:"description"`
-	Author string `json:"author"`
-	Keywords []string `json:"keywords"`
-	Icon PreviewImage `json:"previewImage"`
-	Images []*PreviewImage `json:"images"`
-	Videos []*PreviewVideo `json:"videos"`
+	Type        string          `json:"type"`
+	URL         string          `json:"url"`
+	Title       string          `json:"title"`
+	SiteName    string          `json:"siteName"`
+	Description string          `json:"description"`
+	Author      string          `json:"author"`
+	Keywords    []string        `json:"keywords"`
+	Icon        PreviewImage    `json:"previewImage"`
+	Images      []*PreviewImage `json:"images"`
+	Videos      []*PreviewVideo `json:"videos"`
 }
 
 func SummaryHandler(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +108,7 @@ func extractSummary(resp *http.Response) *Metadata {
 	return metadata
 }
 
-func parseToken(token *html.Token, metadata *Metadata) { 
+func parseToken(token *html.Token, metadata *Metadata) {
 	if token.Data == "meta" {
 		parseMetaTag(token, metadata)
 	}
@@ -179,12 +179,12 @@ func extractMetaAttributes(token *html.Token) (string, string, string) {
 func parseOGImage(property string, content string, metadata *Metadata) {
 	split := strings.Split(property, ":")
 	if len(split) == 2 {
-		newImage := &PreviewImage{ URL: content }
+		newImage := &PreviewImage{URL: content}
 		metadata.Images = append(metadata.Images, newImage)
 		return
 	}
 	suffix := split[2]
-	latestImage := metadata.Images[len(metadata.Images) - 1]
+	latestImage := metadata.Images[len(metadata.Images)-1]
 	if suffix == "url" {
 		latestImage.URL = content
 	}
@@ -216,12 +216,15 @@ func parseOGImage(property string, content string, metadata *Metadata) {
 func parseOGVideo(property string, content string, metadata *Metadata) {
 	split := strings.Split(property, ":")
 	if len(split) == 2 {
-		newVideo := &PreviewVideo{ URL: content }
+		newVideo := &PreviewVideo{URL: content}
 		metadata.Videos = append(metadata.Videos, newVideo)
 		return
 	}
 	suffix := split[2]
-	latestVideo := metadata.Videos[len(metadata.Videos) - 1]
+	if len(metadata.Videos) == 0 {
+		return
+	}
+	latestVideo := metadata.Videos[len(metadata.Videos)-1]
 	if suffix == "url" {
 		latestVideo.URL = content
 	}
@@ -234,14 +237,14 @@ func parseOGVideo(property string, content string, metadata *Metadata) {
 	if suffix == "width" {
 		newInt, err := strconv.Atoi(content)
 		if err != nil {
-			log.Fatal("image width must be an int")
+			log.Fatal("video width must be an int")
 		}
 		latestVideo.Width = newInt
 	}
 	if suffix == "height" {
 		newInt, err := strconv.Atoi(content)
 		if err != nil {
-			log.Fatal("image height must be an int")
+			log.Fatal("video height must be an int")
 		}
 		latestVideo.Height = newInt
 	}
@@ -277,11 +280,11 @@ func parseLinkTag(token *html.Token, metadata *Metadata) {
 			log.Fatal("can't convert icon width to int")
 		}
 		newImage := PreviewImage{
-			URL: href,
-			Type: tipe,
+			URL:    href,
+			Type:   tipe,
 			Height: height,
-			Width: width,
+			Width:  width,
 		}
 		metadata.Icon = newImage
-	}	
+	}
 }
