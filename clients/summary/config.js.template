@@ -1,0 +1,5 @@
+window.config = {
+  remoteHost: '${HOST_NAME}'
+}
+
+console.log('App config loaded:', window.config)

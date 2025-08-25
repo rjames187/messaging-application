@@ -1,4 +1,9 @@
-HOST_NAME = 'https://api.rjames.me'
+const HOST_NAME = window.config?.remoteHost
+if (!HOST_NAME) {
+  console.error('No host name found in config')
+}
+console.log(`Using summarizer host name: ${HOST_NAME}`)
+
 
 const btn = document.querySelector('button')
 
