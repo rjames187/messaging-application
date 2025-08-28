@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"context"
-	"log"
 	"strconv"
 	"time"
 
@@ -12,45 +11,48 @@ import (
 type RedisStore struct {
 	rdb *redis.Client
 	ctx context.Context
-	exp string
+	exp time.Duration
 }
 
 func NewRedisStore(addr string, expiration string) RedisStore {
 	res := RedisStore{}
 	res.rdb = redis.NewClient(&redis.Options{
-		Addr: addr,
+		Addr:     addr,
 		Password: "",
-		DB: 0,
+		DB:       0,
 	})
 	res.ctx = context.Background()
-	res.exp = expiration
+	res.exp, _ = time.ParseDuration(expiration)
 	return res
 }
 
 func (rs *RedisStore) Get(sessionID string) (int, error) {
-	val, err := rs.rdb.Get(rs.ctx, sessionID).Result()
-	if err != nil {
-		if err.Error() == "redis: nil" {
-			return 0, nil
-		}
+	pipe := rs.rdb.Pipeline()
+
+	getResult := pipe.Get(rs.ctx, sessionID)
+	pipe.Expire(rs.ctx, sessionID, rs.exp).Err()
+
+	_, err := pipe.Exec(rs.ctx)
+	if err != nil && err.Error() != "redis: nil" {
 		return 0, err
 	}
-	duration, _ := time.ParseDuration(rs.exp)
-	err = rs.rdb.Expire(rs.ctx, sessionID, duration).Err()
-	if err != nil {
-		log.Print("error resetting Redis expiration timer")
+
+	val := getResult.Val()
+	if val == "" {
+		return 0, nil
 	}
+
 	res, err := strconv.Atoi(val)
 	if err != nil {
 		return 0, err
 	}
+
 	return res, nil
 }
 
 func (rs *RedisStore) Set(sessionID string, userID int) error {
-	duration, _ := time.ParseDuration(rs.exp)
-	return rs.rdb.Set(rs.ctx, sessionID, userID, duration).Err()
-} 
+	return rs.rdb.Set(rs.ctx, sessionID, userID, rs.exp).Err()
+}
 
 func (rs *RedisStore) Delete(sessionID string) error {
 	return rs.rdb.Del(rs.ctx, sessionID).Err()
