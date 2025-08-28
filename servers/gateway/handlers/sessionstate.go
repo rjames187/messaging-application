@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Session struct {
+type SessionState struct {
 	Start time.Time  `json:"start"`
 	User  users.User `json:"user"`
 }
