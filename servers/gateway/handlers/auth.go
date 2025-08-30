@@ -50,6 +50,7 @@ func (ctx *Context) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Authorization", "Bearer "+sessionToken)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
 }
