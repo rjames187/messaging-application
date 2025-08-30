@@ -29,11 +29,11 @@ func hashPassword(password string) (string, error) {
 }
 
 type NewUser struct {
-	FirstName string
-	LastName  string
-	Username string
-	Password  string
-	Email     string
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
 }
 
 func (nu *NewUser) Validate() error {
@@ -58,9 +58,9 @@ func (nu *NewUser) Validate() error {
 func (nu *NewUser) ToUser() (*User, error) {
 	u := User{
 		FirstName: nu.FirstName,
-		LastName: nu.LastName,
-		Username: nu.Username,
-		Email: nu.Email,
+		LastName:  nu.LastName,
+		Username:  nu.Username,
+		Email:     nu.Email,
 	}
 
 	u.PhotoURL = generatePhotoURL(nu.Email)
@@ -75,13 +75,13 @@ func (nu *NewUser) ToUser() (*User, error) {
 }
 
 type User struct {
-	ID int64
-	FirstName string
-	LastName  string
-	Username string
-	PassHash  string
-	Email     string
-	PhotoURL  string
+	ID        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Username  string `json:"username"`
+	PassHash  string `json:"-"`
+	Email     string `json:"-"`
+	PhotoURL  string `json:"photoUrl"`
 }
 
 func (u *User) FullName() string {
@@ -105,9 +105,9 @@ func (u *User) Authenticate(password string) bool {
 
 type Updates struct {
 	FirstName string
-	LastName string
-	Password string
-	Email string
+	LastName  string
+	Password  string
+	Email     string
 }
 
 func (u *User) ApplyUpdates(updates *Updates) error {
@@ -131,7 +131,6 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 }
 
 type Credentials struct {
-	Email string
+	Email    string
 	Password string
 }
-

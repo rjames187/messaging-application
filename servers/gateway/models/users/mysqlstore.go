@@ -38,7 +38,7 @@ func (s *MySQLStore) Insert(user *User) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	user.ID = id
+	user.ID = int(id)
 	return user, nil
 }
 
