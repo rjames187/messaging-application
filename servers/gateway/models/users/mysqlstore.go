@@ -34,29 +34,55 @@ func (s *MySQLStore) Insert(user *User) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	id, err := res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
+
 	user.ID = int(id)
 	return user, nil
 }
 
-func (s *MySQLStore) Get(id int) (*User, error) {
-	gq := "SELECT id,first_name,last_name,username,email,photo_url,pass_hash FROM users where id = ?"
+func (s *MySQLStore) GetByID(id int) (*User, error) {
+	gq := "SELECT id, first_name, last_name, username, email, photo_url, pass_hash FROM users where id = ?"
 	rows, err := s.db.Query(gq, id)
 	if err != nil {
 		return nil, err
 	}
+
 	user := User{}
 	found := rows.Next()
 	if !found {
 		return nil, errors.New("user was not found")
 	}
+
 	err = rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Username, &user.Email, &user.PhotoURL, &user.PassHash)
 	if err != nil {
 		return nil, err
 	}
+
+	return &user, nil
+}
+
+func (s *MySQLStore) GetByEmail(email string) (*User, error) {
+	gq := "SELECT id, first_name, last_name, username, email, photo_url, pass_hash FROM users where email = ?"
+	rows, err := s.db.Query(gq, email)
+	if err != nil {
+		return nil, err
+	}
+
+	user := User{}
+	found := rows.Next()
+	if !found {
+		return nil, errors.New("user was not found")
+	}
+
+	err = rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Username, &user.Email, &user.PhotoURL, &user.PassHash)
+	if err != nil {
+		return nil, err
+	}
+
 	return &user, nil
 }
 
@@ -67,16 +93,10 @@ func (s *MySQLStore) Update(id int, user *User) (*User, error) {
 		return nil, err
 	}
 
-	gq := "SELECT id, first_name, last_name, username, photo_url, FROM users where id = ?"
-	rows, err := s.db.Query(gq, id)
+	updatedUser, err := s.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	updatedUser := User{}
-	err = rows.Scan(&updatedUser.ID, &updatedUser.FirstName, &updatedUser.LastName, &updatedUser.Username, &updatedUser.PhotoURL)
-	if err != nil {
-		return nil, err
-	}
-	return &updatedUser, nil
+	return updatedUser, nil
 }

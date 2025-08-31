@@ -79,7 +79,7 @@ func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	switch r.Method {
 	case http.MethodGet:
-		user, err := ctx.UserStore.Get(userID)
+		user, err := ctx.UserStore.GetByID(userID)
 		if err == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -107,7 +107,7 @@ func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		user, err := ctx.UserStore.Get(userID)
+		user, err := ctx.UserStore.GetByID(userID)
 		if err != nil && err.Error() == "user was not found" {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -127,6 +127,49 @@ func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(updatedUser)
 	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (ctx *Context) SessionsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+			http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+			return
+		}
+
+		credentials := &users.Credentials{}
+		err := json.NewDecoder(r.Body).Decode(credentials)
+		if err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		user, err := ctx.UserStore.GetByEmail(credentials.Email)
+		if err != nil && err.Error() == "user was not found" {
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+			return
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if !user.Authenticate(credentials.Password) {
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+			return
+		}
+
+		sessionToken, err := sessions.BeginSession(user.ID, ctx.Secret, ctx.SessionStore)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Authorization", "Bearer "+sessionToken)
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(user)
+	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

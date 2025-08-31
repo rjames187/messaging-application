@@ -95,7 +95,7 @@ func TestShouldSelectUserByID(t *testing.T) {
 	mock.ExpectQuery("SELECT").WithArgs(uWithID.ID).WillReturnRows(data)
 
 	store := MySQLStore{db: db}
-	newUser, err := store.Get(1)
+	newUser, err := store.GetByID(1)
 	if err != nil {
 		t.Errorf("Error fetching user from database: %s", err)
 	}
@@ -115,7 +115,7 @@ func TestShouldHandleMissingUser(t *testing.T) {
 	mock.ExpectQuery("SELECT").WithArgs(uWithID.ID).WillReturnRows(data)
 
 	store := MySQLStore{db: db}
-	_, err := store.Get(1)
+	_, err := store.GetByID(1)
 	if err == nil {
 		t.Errorf("Expected Get operation to return a not found error")
 	}
