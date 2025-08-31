@@ -58,7 +58,13 @@ func (ctx *Context) UsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) {
-	sessionToken := r.Header.Get("Authorization")[7:]
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		http.Error(w, "Invalid authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	sessionToken := authHeader[7:]
 	loggedInUserID, err := sessions.GetSessionState(sessionToken, ctx.Secret, ctx.SessionStore)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -176,7 +182,12 @@ func (ctx *Context) SessionsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (ctx *Context) SpecificSessionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodDelete {
-		sessionToken := r.Header.Get("Authorization")[7:]
+		authHeader := r.Header.Get("Authorization")
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			http.Error(w, "Invalid authorization header", http.StatusUnauthorized)
+			return
+		}
+		sessionToken := authHeader[7:]
 		err := sessions.EndSession(sessionToken, ctx.SessionStore)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
