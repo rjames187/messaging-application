@@ -5,6 +5,8 @@ import (
 	"messaging-application/servers/gateway/models/users"
 	"messaging-application/servers/gateway/sessions"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 func (ctx *Context) UsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,4 +55,78 @@ func (ctx *Context) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Authorization", "Bearer "+sessionToken)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
+}
+
+func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) {
+	sessionToken := r.Header.Get("Authorization")[7:]
+	loggedInUserID, err := sessions.GetSessionState(sessionToken, ctx.Secret, ctx.SessionStore)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	userIDParam := r.PathValue("UserID")
+	var userID int
+	if userIDParam == "me" {
+		userID = loggedInUserID
+	} else {
+		userID, err = strconv.Atoi(userIDParam)
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		user, err := ctx.UserStore.Get(userID)
+		if err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(user)
+		} else if err.Error() == "user was not found" {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	case http.MethodPatch:
+		if userID != loggedInUserID {
+			http.Error(w, "You are not allowed to update this user", http.StatusForbidden)
+			return
+		}
+
+		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+			http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+			return
+		}
+
+		userUpdate := &users.Updates{}
+		err := json.NewDecoder(r.Body).Decode(userUpdate)
+		if err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		user, err := ctx.UserStore.Get(userID)
+		if err != nil && err.Error() == "user was not found" {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		user.ApplyUpdates(userUpdate)
+
+		updatedUser, err := ctx.UserStore.Update(userID, user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(updatedUser)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }

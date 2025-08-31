@@ -60,11 +60,23 @@ func (s *MySQLStore) Get(id int) (*User, error) {
 	return &user, nil
 }
 
-func (s *MySQLStore) Update(id int, user *User) error {
+func (s *MySQLStore) Update(id int, user *User) (*User, error) {
 	uq := "UPDATE users SET first_name = ?, last_name = ?, username = ?, email = ?, photo_url = ?, pass_hash = ? WHERE id = ?"
 	_, err := s.db.Exec(uq, user.FirstName, user.LastName, user.Username, user.Email, user.PhotoURL, user.PassHash, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	gq := "SELECT id, first_name, last_name, username, photo_url, FROM users where id = ?"
+	rows, err := s.db.Query(gq, id)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedUser := User{}
+	err = rows.Scan(&updatedUser.ID, &updatedUser.FirstName, &updatedUser.LastName, &updatedUser.Username, &updatedUser.PhotoURL)
+	if err != nil {
+		return nil, err
+	}
+	return &updatedUser, nil
 }

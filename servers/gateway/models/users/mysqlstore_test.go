@@ -9,21 +9,21 @@ import (
 
 var u *User = &User{
 	FirstName: "Bob",
-	LastName: "McDonald",
-	Username: "Bobby99",
-	PassHash: "rt36456346347",
-	Email: "bobby@gmail.com",
-	PhotoURL: "https://gravatar.com/avatar/a44ytya74yfya94y",
+	LastName:  "McDonald",
+	Username:  "Bobby99",
+	PassHash:  "rt36456346347",
+	Email:     "bobby@gmail.com",
+	PhotoURL:  "https://gravatar.com/avatar/a44ytya74yfya94y",
 }
 
 var uWithID *User = &User{
-	ID: 1,
+	ID:        1,
 	FirstName: "Bob",
-	LastName: "McDonald",
-	Username: "Bobby99",
-	PassHash: "rt36456346347",
-	Email: "bobby@gmail.com",
-	PhotoURL: "https://gravatar.com/avatar/a44ytya74yfya94y",
+	LastName:  "McDonald",
+	Username:  "Bobby99",
+	PassHash:  "rt36456346347",
+	Email:     "bobby@gmail.com",
+	PhotoURL:  "https://gravatar.com/avatar/a44ytya74yfya94y",
 }
 
 func TestShouldInsertNewUser(t *testing.T) {
@@ -31,7 +31,7 @@ func TestShouldInsertNewUser(t *testing.T) {
 	defer db.Close()
 
 	mock.ExpectExec("INSERT INTO users").WithArgs(u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash).WillReturnResult(sqlmock.NewResult(1, 1))
-	
+
 	store := MySQLStore{db: db}
 	newUser, err := store.Insert(u)
 	if err != nil {
@@ -51,7 +51,7 @@ func TestShouldIncrementUserID(t *testing.T) {
 
 	mock.ExpectExec("INSERT INTO users").WithArgs(u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO users").WithArgs(u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash).WillReturnResult(sqlmock.NewResult(2, 1))
-	
+
 	store := MySQLStore{db: db}
 	_, err := store.Insert(u)
 	if err != nil {
@@ -74,7 +74,7 @@ func TestShouldReturnInsertionError(t *testing.T) {
 	defer db.Close()
 
 	mock.ExpectExec("INSERT INTO users").WithArgs(u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash).WillReturnError(errors.New(""))
-	
+
 	store := MySQLStore{db: db}
 	_, err := store.Insert(u)
 	if err == nil {
@@ -129,11 +129,14 @@ func TestShouldUpdateUser(t *testing.T) {
 	defer db.Close()
 
 	mock.ExpectExec("UPDATE").WithArgs(u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash, uWithID.ID).WillReturnResult(sqlmock.NewResult(1, 1))
-	
+
 	store := MySQLStore{db: db}
-	err := store.Update(1, u)
+	updatedUser, err := store.Update(1, u)
 	if err != nil {
 		t.Errorf("Error updating user: %s", err)
+	}
+	if updatedUser.ID != 1 {
+		t.Errorf("Expected updated ID to be 1 but got %d", updatedUser.ID)
 	}
 	if err = mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("Expectations were not met: %s", err)
