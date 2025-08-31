@@ -6,8 +6,8 @@ type MemoryStore struct {
 	store map[string]int
 }
 
-func (m MemoryStore) New() MemoryStore {
-	return MemoryStore{map[string]int{}}
+func NewMemoryStore() *MemoryStore {
+	return &MemoryStore{store: map[string]int{}}
 }
 
 func (m *MemoryStore) Get(sessionID string) (int, error) {
