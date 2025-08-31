@@ -173,3 +173,19 @@ func (ctx *Context) SessionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
+func (ctx *Context) SpecificSessionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		sessionToken := r.Header.Get("Authorization")[7:]
+		err := sessions.EndSession(sessionToken, ctx.SessionStore)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+		w.Write([]byte("Signed out"))
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
