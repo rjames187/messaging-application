@@ -6,20 +6,25 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
-func getAddr() string {
+func getClient() *redis.Client {
 	addr := os.Getenv("REDISADDR")
-	if addr != "" {
-		return addr
+	if addr == "" {
+		addr = "localhost:6379"
 	}
-	return "localhost:6379"
+	client := redis.NewClient(&redis.Options{
+		Addr: addr,
+	})
+	return client
 }
 
-var ADDR = getAddr()
+var redisClient = getClient()
 
 func TestSetGet(t *testing.T) {
-	client := NewRedisStore(ADDR, "3s")
+	client := NewRedisStore(redisClient, "3s")
 	err := client.Set("key", 3)
 	if err != nil {
 		t.Error("error setting key to 3")
@@ -38,7 +43,7 @@ func TestSetGet(t *testing.T) {
 }
 
 func TestSetOverride(t *testing.T) {
-	client := NewRedisStore(ADDR, "3s")
+	client := NewRedisStore(redisClient, "3s")
 	err := client.Set("key", 3)
 	if err != nil {
 		t.Error("error setting key to 3")
@@ -57,7 +62,7 @@ func TestSetOverride(t *testing.T) {
 }
 
 func TestExpiration(t *testing.T) {
-	client := NewRedisStore(ADDR, "2s")
+	client := NewRedisStore(redisClient, "2s")
 	err := client.Set("k", 3)
 	if err != nil {
 		t.Error("error setting k to 3")
@@ -71,7 +76,7 @@ func TestExpiration(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	client := NewRedisStore(ADDR, "10s")
+	client := NewRedisStore(redisClient, "10s")
 	err := client.Set("i", 3)
 	if err != nil {
 		t.Error("error setting i to 3")

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -13,19 +12,17 @@ type MySQLStore struct {
 	db *sql.DB
 }
 
-func (s *MySQLStore) Startup() error {
-	dsn := fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/gateway", os.Getenv("MYSQL_ROOT_PASSWORD"))
-	db, err := sql.Open("mysql", dsn)
+func NewMySQLStore(db *sql.DB) (MySQLStore, error) {
+	if db == nil {
+		return MySQLStore{}, fmt.Errorf("db must not be nil")
+	}
+
+	err := db.Ping()
 	if err != nil {
-		return err
+		return MySQLStore{}, fmt.Errorf("error pinging db: %w", err)
 	}
-	if err = db.Ping(); err != nil {
-		return err
-	} else {
-		fmt.Println("Successfully connected to the MySQL databases ...")
-	}
-	s.db = db
-	return nil
+
+	return MySQLStore{db: db}, nil
 }
 
 func (s *MySQLStore) Insert(user *User) (*User, error) {

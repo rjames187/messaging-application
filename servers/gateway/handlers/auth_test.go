@@ -12,12 +12,12 @@ import (
 	"testing"
 )
 
-var ctx *Context
+var ctx *HandlerContext
 
 const secret = "c2VjcmV0"
 
 func newContext() *http.ServeMux {
-	ctx = &Context{
+	ctx = &HandlerContext{
 		secret,
 		sessions.NewMemoryStore(),
 		users.NewStubStore(),

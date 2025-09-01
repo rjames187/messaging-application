@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (ctx *Context) UsersHandler(w http.ResponseWriter, r *http.Request) {
+func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -57,7 +57,7 @@ func (ctx *Context) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) {
+func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		http.Error(w, "Invalid authorization header", http.StatusUnauthorized)
@@ -137,7 +137,7 @@ func (ctx *Context) SpecificUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (ctx *Context) SessionsHandler(w http.ResponseWriter, r *http.Request) {
+func (ctx *HandlerContext) SessionsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 			http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
@@ -180,7 +180,7 @@ func (ctx *Context) SessionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (ctx *Context) SpecificSessionHandler(w http.ResponseWriter, r *http.Request) {
+func (ctx *HandlerContext) SpecificSessionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodDelete {
 		authHeader := r.Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {

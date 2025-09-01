@@ -36,7 +36,8 @@ func EndSession(sessionToken string, store Store) error {
 	if err != nil {
 		return err
 	}
-	err = store.Delete(sessionID); if err != nil {
+	err = store.Delete(sessionID)
+	if err != nil {
 		return err
 	}
 	return nil

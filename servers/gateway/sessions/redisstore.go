@@ -14,13 +14,9 @@ type RedisStore struct {
 	exp time.Duration
 }
 
-func NewRedisStore(addr string, expiration string) RedisStore {
+func NewRedisStore(client *redis.Client, expiration string) RedisStore {
 	res := RedisStore{}
-	res.rdb = redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: "",
-		DB:       0,
-	})
+	res.rdb = client
 	res.ctx = context.Background()
 	res.exp, _ = time.ParseDuration(expiration)
 	return res
