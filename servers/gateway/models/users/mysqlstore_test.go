@@ -130,6 +130,10 @@ func TestShouldUpdateUser(t *testing.T) {
 
 	mock.ExpectExec("UPDATE").WithArgs(u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash, uWithID.ID).WillReturnResult(sqlmock.NewResult(1, 1))
 
+	data := sqlmock.NewRows([]string{"id", "first_name", "last_name", "username", "email", "photo_url", "pass_hash"})
+	data.AddRow(uWithID.ID, u.FirstName, u.LastName, u.Username, u.Email, u.PhotoURL, u.PassHash)
+	mock.ExpectQuery("SELECT").WithArgs(uWithID.ID).WillReturnRows(data)
+
 	store := MySQLStore{db: db}
 	updatedUser, err := store.Update(1, u)
 	if err != nil {
