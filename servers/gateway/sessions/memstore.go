@@ -3,31 +3,31 @@ package sessions
 import "errors"
 
 type MemoryStore struct {
-	store map[string]int
+	store map[string]string
 }
 
 func NewMemoryStore() *MemoryStore {
-	return &MemoryStore{store: map[string]int{}}
+	return &MemoryStore{store: map[string]string{}}
 }
 
-func (m *MemoryStore) Get(sessionID string) (int, error) {
-	userID := m.store[sessionID]
-	if userID == 0 {
-		return 0, errors.New("no matches to given token in session store")
+func (m *MemoryStore) Get(key string) (string, error) {
+	value, ok := m.store[key]
+	if !ok {
+		return "", errors.New("no matches to given token in session store")
 	}
-	return userID, nil
+	return value, nil
 }
 
-func (m *MemoryStore) Set(sessionID string, userID int) error {
-	m.store[sessionID] = userID
+func (m *MemoryStore) Set(key string, value string) error {
+	m.store[key] = value
 	return nil
 }
 
-func (m *MemoryStore) Delete(sessionID string) error {
-	userID := m.store[sessionID]
-	if userID == 0 {
+func (m *MemoryStore) Delete(key string) error {
+	_, ok := m.store[key]
+	if !ok {
 		return errors.New("no matches to given token in session store")
 	}
-	delete(m.store, sessionID)
+	delete(m.store, key)
 	return nil
 }

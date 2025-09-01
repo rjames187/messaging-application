@@ -45,7 +45,13 @@ func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	sessionToken, err := sessions.BeginSession(user.ID, ctx.Secret, ctx.SessionStore)
+	sessionState, err := GetSerializedSessionState(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	sessionToken, err := sessions.BeginSession(sessionState, ctx.Secret, ctx.SessionStore)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -65,12 +71,20 @@ func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	sessionToken := authHeader[7:]
-	loggedInUserID, err := sessions.GetSessionState(sessionToken, ctx.Secret, ctx.SessionStore)
+	serializedSessionState, err := sessions.GetSessionState(sessionToken, ctx.Secret, ctx.SessionStore)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
+	sessionState := &SessionState{}
+	err = json.Unmarshal([]byte(serializedSessionState), sessionState)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	loggedInUserID := sessionState.User.ID
 	userIDParam := r.PathValue("UserID")
 	var userID int
 	if userIDParam == "me" {
@@ -165,7 +179,13 @@ func (ctx *HandlerContext) SessionsHandler(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		sessionToken, err := sessions.BeginSession(user.ID, ctx.Secret, ctx.SessionStore)
+		sessionState, err := GetSerializedSessionState(user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		sessionToken, err := sessions.BeginSession(sessionState, ctx.Secret, ctx.SessionStore)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

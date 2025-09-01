@@ -1,7 +1,7 @@
 package sessions
 
 type Store interface {
-	Get(sessionID string) (int, error)
-	Set(sessionID string, userID int) error
-	Delete(sessionID string) error
+	Get(key string) (string, error)
+	Set(key string, value string) error
+	Delete(key string) error
 }

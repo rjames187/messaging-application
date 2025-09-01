@@ -25,11 +25,11 @@ var redisClient = getClient()
 
 func TestSetGet(t *testing.T) {
 	client := NewRedisStore(redisClient, "3s")
-	err := client.Set("key", 3)
+	err := client.Set("key", "3")
 	if err != nil {
 		t.Error("error setting key to 3")
 	}
-	err = client.Set("key2", 5)
+	err = client.Set("key2", "5")
 	if err != nil {
 		t.Error("error setting key2 to 5")
 	}
@@ -37,18 +37,18 @@ func TestSetGet(t *testing.T) {
 	if err != nil {
 		t.Error("error fetching key")
 	}
-	if val != 3 {
-		t.Errorf("fetched key should have equaled 3 and not %d", val)
+	if val != "3" {
+		t.Errorf("fetched key should have equaled 3 and not %s", val)
 	}
 }
 
 func TestSetOverride(t *testing.T) {
 	client := NewRedisStore(redisClient, "3s")
-	err := client.Set("key", 3)
+	err := client.Set("key", "3")
 	if err != nil {
 		t.Error("error setting key to 3")
 	}
-	err = client.Set("key", 5)
+	err = client.Set("key", "5")
 	if err != nil {
 		t.Error("error setting key to 5")
 	}
@@ -56,14 +56,14 @@ func TestSetOverride(t *testing.T) {
 	if err != nil {
 		t.Error("error fetching key")
 	}
-	if val != 5 {
-		t.Errorf("fetched key should have equaled 5 and not %d", val)
+	if val != "5" {
+		t.Errorf("fetched key should have equaled 5 and not %s", val)
 	}
 }
 
 func TestExpiration(t *testing.T) {
 	client := NewRedisStore(redisClient, "2s")
-	err := client.Set("k", 3)
+	err := client.Set("k", "3")
 	if err != nil {
 		t.Error("error setting k to 3")
 	}
@@ -77,7 +77,7 @@ func TestExpiration(t *testing.T) {
 
 func TestReset(t *testing.T) {
 	client := NewRedisStore(redisClient, "10s")
-	err := client.Set("i", 3)
+	err := client.Set("i", "3")
 	if err != nil {
 		t.Error("error setting i to 3")
 	}
@@ -89,10 +89,10 @@ func TestReset(t *testing.T) {
 	if err != nil {
 		t.Errorf("error fetching key i: %s", err)
 	}
-	if val == 0 {
+	if val == "0" {
 		t.Error("key k should have been present")
 	}
-	if val != 3 {
+	if val != "3" {
 		t.Error("key k should have equaled 3")
 	}
 }

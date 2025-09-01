@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -22,34 +21,26 @@ func NewRedisStore(client *redis.Client, expiration string) RedisStore {
 	return res
 }
 
-func (rs *RedisStore) Get(sessionID string) (int, error) {
+func (rs *RedisStore) Get(key string) (string, error) {
 	pipe := rs.rdb.Pipeline()
 
-	getResult := pipe.Get(rs.ctx, sessionID)
-	pipe.Expire(rs.ctx, sessionID, rs.exp).Err()
+	getResult := pipe.Get(rs.ctx, key)
+	pipe.Expire(rs.ctx, key, rs.exp).Err()
 
 	_, err := pipe.Exec(rs.ctx)
 	if err != nil && err.Error() != "redis: nil" {
-		return 0, err
+		return "", err
 	}
 
 	val := getResult.Val()
-	if val == "" {
-		return 0, nil
-	}
 
-	res, err := strconv.Atoi(val)
-	if err != nil {
-		return 0, err
-	}
-
-	return res, nil
+	return val, nil
 }
 
-func (rs *RedisStore) Set(sessionID string, userID int) error {
-	return rs.rdb.Set(rs.ctx, sessionID, userID, rs.exp).Err()
+func (rs *RedisStore) Set(key string, value string) error {
+	return rs.rdb.Set(rs.ctx, key, value, rs.exp).Err()
 }
 
-func (rs *RedisStore) Delete(sessionID string) error {
-	return rs.rdb.Del(rs.ctx, sessionID).Err()
+func (rs *RedisStore) Delete(key string) error {
+	return rs.rdb.Del(rs.ctx, key).Err()
 }
