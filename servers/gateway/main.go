@@ -8,6 +8,7 @@ import (
 	"messaging-application/servers/gateway/sessions"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -48,6 +49,7 @@ func main() {
 	})
 	redisStore := sessions.NewRedisStore(redisClient, "1h")
 
+	time.Sleep(10 * time.Second) // wait for database to start up
 	db, err := sql.Open("mysql", DSN)
 	if err != nil {
 		log.Fatalf("error opening db: %v", err)

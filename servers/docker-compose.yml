@@ -1,0 +1,32 @@
+services:
+  gateway:
+    image: rjames187/gateway:1.0
+    environment:
+      TLSCERT: /etc/certs/fullchain.pem
+      TLSKEY: /etc/certs/privkey.pem
+      SESSIONKEY: c2VjcmV0
+      REDISADDR: redis:6379
+      DSN: root:root@tcp(db:3306)/gateway
+    volumes:
+      - ./gateway:/etc/certs:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  db:
+    image: rjames187/db:1.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gateway
+    networks:
+      - backend
+
+  redis:
+    image: redis
+    networks:
+      - backend
+
+networks:
+  backend:

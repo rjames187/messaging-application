@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -15,6 +17,19 @@ type MySQLStore struct {
 func NewMySQLStore(db *sql.DB) (MySQLStore, error) {
 	if db == nil {
 		return MySQLStore{}, fmt.Errorf("db must not be nil")
+	}
+
+	// Test the connection
+	for i := 1; i <= 4; i++ {
+		wait := time.Second * time.Duration(2*i)
+		time.Sleep(wait)
+		err := db.Ping()
+		if err == nil {
+			log.Print("db successfully pinged")
+			break
+		} else {
+			log.Printf("error pinging db (attempt %d): %v", i, err)
+		}
 	}
 
 	err := db.Ping()
