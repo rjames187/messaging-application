@@ -187,6 +187,12 @@ func (ctx *Context) SpecificSessionHandler(w http.ResponseWriter, r *http.Reques
 			http.Error(w, "Invalid authorization header", http.StatusUnauthorized)
 			return
 		}
+
+		if r.PathValue("SessionID") != "mine" {
+			http.Error(w, "You are not allowed to delete this session", http.StatusForbidden)
+			return
+		}
+
 		sessionToken := authHeader[7:]
 		err := sessions.EndSession(sessionToken, ctx.SessionStore)
 		if err != nil {

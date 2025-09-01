@@ -319,3 +319,212 @@ func TestSpecificUserErrors(t *testing.T) {
 		t.Errorf("Expected status %d, got %d", http.StatusUnsupportedMediaType, status)
 	}
 }
+
+func TestSessionsFlow(t *testing.T) {
+	handler := newContext()
+
+	// Create a new user
+	jsonData, err := json.Marshal(&users.NewUser{
+		Password:  "password343",
+		Email:     "valid_email@example.com",
+		FirstName: "Jon",
+		LastName:  "Doe",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/v1/users", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusCreated {
+		t.Fatal(rr.Body.String())
+	}
+
+	authHeader := rr.Header().Get("Authorization")
+
+	// Delete session
+	req, err = http.NewRequest(http.MethodDelete, "/v1/sessions/mine", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", authHeader)
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusNoContent {
+		t.Errorf("Expected status %d, got %d", http.StatusNoContent, status)
+	}
+
+	// Create new session
+	jsonData, err = json.Marshal(&users.Credentials{
+		Password: "password343",
+		Email:    "valid_email@example.com",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err = http.NewRequest(http.MethodPost, "/v1/sessions", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	authHeader = rr.Header().Get("Authorization")
+
+	if status := rr.Code; status != http.StatusCreated {
+		t.Errorf("Expected status %d, got %d", http.StatusCreated, status)
+	}
+
+	// Retrieve user
+	req, err = http.NewRequest(http.MethodGet, "/v1/users/me", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", authHeader)
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Expected status %d, got %d", http.StatusOK, status)
+	}
+}
+
+func TestSessionsErrors(t *testing.T) {
+	handler := newContext()
+
+	// Create a new user
+	jsonData, err := json.Marshal(&users.NewUser{
+		Password:  "password343",
+		Email:     "valid_email@example.com",
+		FirstName: "Jon",
+		LastName:  "Doe",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/v1/users", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusCreated {
+		t.Fatal(rr.Body.String())
+	}
+
+	authHeader := rr.Header().Get("Authorization")
+
+	// Wrong content type for create session
+	req, err = http.NewRequest(http.MethodPost, "/v1/sessions", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "text/plain")
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusUnsupportedMediaType {
+		t.Errorf("Expected status %d, got %d", http.StatusUnsupportedMediaType, status)
+	}
+
+	// Wrong method for create session
+	req, err = http.NewRequest(http.MethodPut, "/v1/sessions", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusMethodNotAllowed {
+		t.Errorf("Expected status %d, got %d", http.StatusMethodNotAllowed, status)
+	}
+
+	// Wrong method for delete session
+	req, err = http.NewRequest(http.MethodPut, "/v1/sessions/mine", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", authHeader)
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusMethodNotAllowed {
+		t.Errorf("Expected status %d, got %d", http.StatusMethodNotAllowed, status)
+	}
+
+	// Forbidden session deletion
+	req, err = http.NewRequest(http.MethodDelete, "/v1/sessions/999", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", authHeader)
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusForbidden {
+		t.Errorf("Expected status %d, got %d", http.StatusForbidden, status)
+	}
+
+	// Login to non-existent account
+	jsonData, err = json.Marshal(&users.Credentials{
+		Password: "password343",
+		Email:    "non_existent_email@example.com",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err = http.NewRequest(http.MethodPost, "/v1/sessions", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusUnauthorized {
+		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, status)
+	}
+
+	// Login with incorrect password
+	jsonData, err = json.Marshal(&users.Credentials{
+		Password: "wrong_password",
+		Email:    "valid_email@example.com",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err = http.NewRequest(http.MethodPost, "/v1/sessions", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusUnauthorized {
+		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, status)
+	}
+}
