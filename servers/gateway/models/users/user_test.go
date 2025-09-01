@@ -4,7 +4,7 @@ import "testing"
 
 func TestValidate(t *testing.T) {
 	cases := []struct {
-		input *NewUser
+		input  *NewUser
 		output string
 	}{
 		{&NewUser{FirstName: "Bob", LastName: "Jones", Password: "password1", Email: "Bob.jones@gmail.com"}, "valid"},
@@ -28,7 +28,7 @@ func TestValidate(t *testing.T) {
 
 func TestToUser(t *testing.T) {
 	cases := []struct {
-		input *NewUser
+		input  *NewUser
 		output *User
 	}{
 		{
@@ -62,8 +62,8 @@ func TestToUser(t *testing.T) {
 }
 
 func TestFullName(t *testing.T) {
-	cases := []struct{
-		input *User
+	cases := []struct {
+		input  *User
 		output string
 	}{
 		{
@@ -98,10 +98,10 @@ func TestAuthenticate(t *testing.T) {
 	}
 	u, _ := nu.ToUser()
 
-	cases := []struct{
-		user *User
+	cases := []struct {
+		user     *User
 		password string
-		output bool
+		output   bool
 	}{
 		{u, "Epic1245!", true},
 		{u, "fdgsdsg45", false},
@@ -117,10 +117,10 @@ func TestAuthenticate(t *testing.T) {
 }
 
 func TestApplyUpdates(t *testing.T) {
-	userFixture, _  := (&NewUser{Password: "boss88", Email: "funny@gmail.com"}).ToUser()
+	userFixture, _ := (&NewUser{Password: "boss88", Email: "funny@gmail.com"}).ToUser()
 
-	cases := []struct{
-		user *User
+	cases := []struct {
+		user    *User
 		updates *Updates
 	}{
 		{&User{}, &Updates{FirstName: "Bob"}},
