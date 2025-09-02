@@ -1,42 +1,115 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Update = () => {
-  // Mock user data - replace with actual user data from context/props/API
-  const user = {
-    firstName: 'John',
-    lastName: 'Doe'
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleSignOut = () => {
-    // Add signout logic here (clear tokens, redirect, etc.)
-    console.log('Signing out...');
-    // Example: localStorage.removeItem('token');
-    // Example: navigate('/login');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (formData.firstName === '' && formData.lastName === '') {
+      alert('Please enter at least one field to update.');
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+
+    const updates = {
+      firstName: formData.firstName !== "" ? formData.firstName : undefined,
+      lastName: formData.lastName !== "" ? formData.lastName : undefined
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/v1/users/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('authorization')
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      setMessage('Profile updated successfully!');
+      setFormData({ firstName: '', lastName: '' });
+    } catch (error) {
+      setMessage('Error updating profile. Please try again.');
+      console.error('There was a problem with the fetch operation:', error);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="view-container">
-      <div className="user-info">
-        <h1>Welcome, {user.firstName} {user.lastName}</h1>
+    <div className="update-profile">
+      <div className="container">
+        <h1>Update Profile</h1>
         
-        <div className="user-details">
-          <p><strong>First Name:</strong> {user.firstName}</p>
-          <p><strong>Last Name:</strong> {user.lastName}</p>
-        </div>
-        
-        <div className="actions">
-          <Link to="/profile/edit" className="update-profile-link">
-            Update Profile
-          </Link>
-          
-          <button 
-            onClick={handleSignOut}
-            className="signout-button"
-            type="button"
-          >
-            Sign Out
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} className="profile-form">
+          <div className="form-group">
+            <label htmlFor="firstName">First Name:</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name:</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-actions">
+            <button 
+              type="submit" 
+              disabled={isLoading}
+              className="btn btn-primary"
+            >
+              {isLoading ? 'Updating...' : 'Update Profile'}
+            </button>
+            
+            <Link to="/view" className="btn btn-secondary">
+              View Profile
+            </Link>
+          </div>
+        </form>
+
+        {message && (
+          <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+            {message}
+          </div>
+        )}
       </div>
     </div>
   );
