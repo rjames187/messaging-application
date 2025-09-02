@@ -1,6 +1,8 @@
 services:
   gateway:
     image: rjames187/gateway:1.0
+    ports:
+      - "443:443"
     environment:
       TLSCERT: /etc/certs/fullchain.pem
       TLSKEY: /etc/certs/privkey.pem
