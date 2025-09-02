@@ -1,12 +1,18 @@
-import { useState } from 'react'
+import Login from "./pages/Login"
+import Signup from "./pages/Signup"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      hello world
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/view" element={<View />} />
+        <Route path="/update" element={<Update />} />
+      </Routes>
+    </Router>
   )
 }
 
