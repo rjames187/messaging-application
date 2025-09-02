@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +12,7 @@ const Signup = () => {
     password: '',
     confirmPassword: ''
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,17 +22,48 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
     
-    // Handle signup logic here
     console.log('Signup attempt:', formData);
+
+    const newUser = {
+      email: formData.email,
+      username: formData.username,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      password: formData.password
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/v1/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newUser)
+      });
+
+      if (!response.ok) {
+        throw new Error('Signup failed');
+      }
+
+      const data = await response.json();
+      console.log('Signup successful:', data);
+
+      const authHeader = response.headers.get('Authorization');
+      localStorage.setItem('authorization', authHeader);
+
+      navigate('/view');
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert(error.message);
+    }
   };
 
   return (
@@ -121,7 +155,7 @@ const Signup = () => {
         </form>
 
         <div className="login-link">
-          <p>Already have an account? <Link to="/login">Login here</Link></p>
+          <p>Already have an account? <Link to="/">Login here</Link></p>
         </div>
       </div>
     </div>

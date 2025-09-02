@@ -1,17 +1,69 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const View = () => {
-  // Mock user data - replace with actual user data from context/props/API
-  const user = {
-    firstName: 'John',
-    lastName: 'Doe'
-  };
+  const [user, setUser] = useState({
+    firstName: "",
+    lastName: ""
+  });
+  const navigate = useNavigate();
 
-  const handleSignOut = () => {
-    // Add signout logic here (clear tokens, redirect, etc.)
+  useEffect(() => {
+    const authHeader = localStorage.getItem('authorization') ?? '';
+    if (!authHeader.startsWith("Bearer ")) {
+      navigate('/');
+    }
+
+    (async () => {
+      try {
+        const response = await fetch(`${API_URL}/v1/users/me`, {
+        headers: {
+          'Authorization': authHeader
+        }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        const data = await response.json();
+        setUser({
+          firstName: data.firstName,
+          lastName: data.lastName
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        alert(error.message);
+      }
+    })();
+  }, [])
+
+  const handleSignOut = async () => {
     console.log('Signing out...');
-    // Example: localStorage.removeItem('token');
-    // Example: navigate('/login');
+
+    try {
+      const response = await fetch(`${API_URL}/v1/sessions/mine`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': localStorage.getItem('authorization')
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Sign out failed');
+      }
+
+      console.log('Sign out successful');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      alert(error.message);
+      return;
+    }
+
+    localStorage.removeItem('authorization');
+    navigate('/');
   };
 
   return (
@@ -25,7 +77,7 @@ const View = () => {
         </div>
         
         <div className="actions">
-          <Link to="/profile/edit" className="update-profile-link">
+          <Link to="/update" className="update-profile-link">
             Update Profile
           </Link>
           

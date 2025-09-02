@@ -1,13 +1,43 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit =  async (e) => {
     e.preventDefault();
     console.log('Login attempt:', { email, password });
+
+    const credentials = { email, password };
+
+    try {
+      const response = await fetch(`${API_URL}/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      console.log('Login successful:', data);
+
+      const authHeader = response.headers.get('Authorization');
+      localStorage.setItem('authorization', authHeader);
+
+      navigate('/view');
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert(error.message);
+    }
   };
 
   return (

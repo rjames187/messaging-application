@@ -1,5 +1,7 @@
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
+import View from "./pages/View"
+import Update from "./pages/Update"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
 function App() {
