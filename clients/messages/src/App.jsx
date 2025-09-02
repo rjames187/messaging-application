@@ -3,6 +3,7 @@ import Signup from "./pages/Signup"
 import View from "./pages/View"
 import Update from "./pages/Update"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import './App.css'
 
 function App() {
 
